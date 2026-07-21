@@ -6,7 +6,7 @@
 
 - Project root: `D:\unity-memory-npc-prototype`
 - Purpose: pre-project feasibility prototype for one persistent-memory NPC dialogue flow; not the assessed CM3070 implementation or formal experiment.
-- Current state: valid, nearly empty Unity project baseline with no first-party assets, code, assemblies, scenes or tests yet.
+- Current state: valid Unity P0 baseline with a minimal startup scene, explicit runtime/EditMode test assemblies and one environment test.
 - Last analyzed: 2026-07-21
 - Last analyzed commit: `f9ecfbac3c9991a9a4bb277e04d9955336368458`
 - Package baseline was updated after the analyzed commit: MCPForUnity is now a direct pinned dependency, unused template packages were removed, and Unity regenerated a consistent lock file.
@@ -33,22 +33,24 @@
 
 | Path | Purpose | Confidence | Evidence |
 | --- | --- | --- | --- |
-| `Assets/Scenes/` | Intended scene location; currently empty. | Confirmed | filesystem inspection |
+| `Assets/Scenes/Prototype.unity` | Minimal startup scene containing one Camera and one Directional Light. | Confirmed | Unity scene hierarchy |
+| `Assets/UnityMemoryNPCPrototype/Runtime/` | Runtime assembly and prototype code. | Confirmed | assembly definition and source files |
+| `Assets/UnityMemoryNPCPrototype/Tests/EditMode/` | Editor-only tests that reference the runtime assembly. | Confirmed | assembly definition and source files |
 | `Packages/` | Reproducible Unity package declarations and lock data. | Confirmed | `Packages/manifest.json`, `Packages/packages-lock.json` |
 | `ProjectSettings/` | Unity editor and player settings. | Confirmed | project files |
 | `Docs/` | Scope, roadmap, proposal and learning/decision records. | Confirmed | repository documentation |
 
 ## Assembly Boundaries
 
-- No `.asmdef` or `.asmref` files exist.
-- No first-party C# files exist, so the project currently has no implemented runtime/test dependency boundary.
-- P0 should establish small runtime and EditMode test assemblies before P1 grows, keeping domain/provider abstractions independent of scene objects.
+- `UnityMemoryNPCPrototype.Runtime`: runtime code boundary; may use UnityEngine but must not reference UnityEditor.
+- `UnityMemoryNPCPrototype.Tests.EditMode`: Editor-only NUnit test assembly with a one-way reference to Runtime.
+- Expected P1 direction: presentation and tests may reference Runtime; Runtime must not depend on scene objects or test code.
 
 ## Scenes And Startup Flow
 
-- Build scenes: none (`m_Scenes: []`).
-- Startup scene: none.
-- Scene loading flow: not implemented.
+- Build scenes: `Assets/Scenes/Prototype.unity`, enabled at build index 0.
+- Startup scene: `Prototype`.
+- Scene loading flow: direct startup through Build Settings; no scene-loading system is needed for the one-scene prototype.
 
 ## Architecture
 
@@ -67,7 +69,7 @@
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: no first-party tests or test assembly yet.
+- EditMode tests: one first-party environment baseline test; 1 passed, 0 failed, 0 skipped on 2026-07-21.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.
@@ -95,8 +97,8 @@
 ## Unknowns And Confidence
 
 - Confirmed: post-package-refresh Editor status is idle and the Console contains no errors or warnings.
-- Unknown: exact scene composition and startup flow; no scene exists yet.
-- Unknown: final P0 assembly names and folder layout; these should be decided before P1 implementation.
+- Confirmed: the startup scene contains exactly a Main Camera and Directional Light and is enabled at build index 0.
+- Confirmed: Runtime and EditMode test assembly names and folder boundaries are established.
 - Risk: README and planning documents predate project creation and must stay synchronized with the actual repository state.
 - Risk: two Unity projects expose MCP instances simultaneously, so agents must explicitly select `unity-memory-npc-prototype@6bf076995c73b7ab` before reading or mutating Editor state.
 

@@ -81,3 +81,29 @@ Direct dependencies should express actual project intent. A smaller package surf
 ### Next lesson
 
 Package minimalism is not removing everything possible; it is retaining every dependency that supports an explicit requirement and being able to explain that mapping.
+
+## 2026-07-21 - P0 compilation, test and startup baseline
+
+### Situation
+
+The Unity project resolved its packages but still had no first-party assembly boundary, executable scene or meaningful test. Starting P1 in that state would mix feature design with environment and project-structure failures.
+
+### Decision
+
+Create a runtime assembly, an Editor-only test assembly that references it, one Unity-version baseline test and one `Prototype` startup scene containing only a Camera and Directional Light. Allow the application Runtime assembly to use UnityEngine because this repository is a focused Unity prototype rather than a reusable pure-C# framework.
+
+### Why
+
+The assembly reference makes the intended dependency direction enforceable by the compiler. The test converts the pinned Unity version from documentation into executable evidence. The minimal scene proves the startup path without prematurely designing the dialogue interface.
+
+### Validation
+
+- Unity imported and compiled the new assemblies with no Console errors or warnings.
+- `UnityVersionMatchesProjectRequirement` passed: 1 passed, 0 failed, 0 skipped.
+- `Prototype.unity` contains exactly a Main Camera and Directional Light.
+- `Prototype.unity` is enabled at build index 0.
+- The Editor entered and exited Play Mode with no Console errors or warnings; no visual or dialogue behavior was claimed.
+
+### Next lesson
+
+P1 can now focus on one question only: whether player input can travel through a provider abstraction and produce deterministic mock dialogue in the UI.
