@@ -20,13 +20,14 @@ The prototype is complete when this flow works with a mock provider, handles fai
 
 ## Current status
 
-The Git repository and planning documents exist. A Unity project has not yet been created in this repository.
+A Unity 2022.3.62f3 project baseline and the planning documents exist. The project does not yet contain a scene, first-party runtime code or first-party tests. The next milestone is to establish assembly and test boundaries, verify a clean Unity compilation baseline, and then build the offline mock-provider dialogue vertical slice.
 
 ## Documentation
 
 - [Prototype scope](Docs/PROTOTYPE_SCOPE.md)
 - [Development roadmap](Docs/ROADMAP.md)
 - [Learning log](Docs/LEARNING_LOG.md)
+- [Unity project context](Docs/AI/UnityProjectContext.md)
 - [CM3070 project proposal](Docs/PROJECT_PROPOSAL_CM3070.md)
 
 ## Academic boundary
