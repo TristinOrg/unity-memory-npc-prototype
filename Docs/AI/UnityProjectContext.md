@@ -6,7 +6,7 @@
 
 - Project root: `D:\unity-memory-npc-prototype`
 - Purpose: pre-project feasibility prototype for one persistent-memory NPC dialogue flow; not the assessed CM3070 implementation or formal experiment.
-- Current state: valid Unity P0 baseline with a minimal startup scene, explicit runtime/EditMode test assemblies and one environment test.
+- Current state: valid Unity P1 baseline with a minimal startup scene and an offline mock-provider dialogue vertical slice.
 - Last analyzed: 2026-07-21
 - Last analyzed commit: `f9ecfbac3c9991a9a4bb277e04d9955336368458`
 - Package baseline was updated after the analyzed commit: MCPForUnity is now a direct pinned dependency, unused template packages were removed, and Unity regenerated a consistent lock file.
@@ -33,8 +33,9 @@
 
 | Path | Purpose | Confidence | Evidence |
 | --- | --- | --- | --- |
-| `Assets/Scenes/Prototype.unity` | Minimal startup scene containing one Camera and one Directional Light. | Confirmed | Unity scene hierarchy |
+| `Assets/Scenes/Prototype.unity` | Single startup scene containing the camera, light and offline dialogue UI. | Confirmed | Unity scene hierarchy |
 | `Assets/UnityMemoryNPCPrototype/Runtime/` | Runtime assembly and prototype code. | Confirmed | assembly definition and source files |
+| `Assets/UnityMemoryNPCPrototype/Presentation/` | Scene-facing dialogue controller and UI integration. | Confirmed | assembly definition and source files |
 | `Assets/UnityMemoryNPCPrototype/Tests/EditMode/` | Editor-only tests that reference the runtime assembly. | Confirmed | assembly definition and source files |
 | `Packages/` | Reproducible Unity package declarations and lock data. | Confirmed | `Packages/manifest.json`, `Packages/packages-lock.json` |
 | `ProjectSettings/` | Unity editor and player settings. | Confirmed | project files |
@@ -43,8 +44,9 @@
 ## Assembly Boundaries
 
 - `UnityMemoryNPCPrototype.Runtime`: runtime code boundary; may use UnityEngine but must not reference UnityEditor.
+- `UnityMemoryNPCPrototype.Presentation`: Unity UI and scene integration; references Runtime, TextMesh Pro and uGUI.
 - `UnityMemoryNPCPrototype.Tests.EditMode`: Editor-only NUnit test assembly with a one-way reference to Runtime.
-- Expected P1 direction: presentation and tests may reference Runtime; Runtime must not depend on scene objects or test code.
+- Dependency direction: Presentation and tests may reference Runtime; Runtime must not depend on scene objects, Presentation or test code.
 
 ## Scenes And Startup Flow
 
@@ -58,7 +60,8 @@
 | --- | --- | --- | --- |
 | Dependency direction | Presentation may depend on domain/provider abstractions; core data and algorithms should avoid scene dependencies. | Confirmed requirement | `AGENTS.md` |
 | Delivery strategy | Implement an offline mock-provider dialogue vertical slice before persistence, context budgeting or a remote provider. | Confirmed requirement | `Docs/ROADMAP.md`, `Docs/PROTOTYPE_SCOPE.md` |
-| Implemented architecture | No production architecture exists yet. | Confirmed | `Assets/` |
+| Provider boundary | `DialogueController` depends on `IAIProvider`; P1 composes the deterministic `MockAIProvider` directly without a DI framework. | Confirmed | first-party source |
+| Presentation | A scene-bound controller owns UI interaction, request cancellation and safe fallback presentation. | Confirmed | first-party source and scene |
 
 ## Coding Conventions
 
@@ -69,7 +72,7 @@
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: one first-party environment baseline test; 1 passed, 0 failed, 0 skipped on 2026-07-21.
+- EditMode tests: four first-party tests; 4 passed, 0 failed, 0 skipped on 2026-07-21.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.
@@ -97,8 +100,9 @@
 ## Unknowns And Confidence
 
 - Confirmed: post-package-refresh Editor status is idle and the Console contains no errors or warnings.
-- Confirmed: the startup scene contains exactly a Main Camera and Directional Light and is enabled at build index 0.
+- Confirmed: the startup scene contains the camera, directional light, dialogue Canvas, EventSystem and serialized DialogueController and is enabled at build index 0.
 - Confirmed: Runtime and EditMode test assembly names and folder boundaries are established.
+- Confirmed: submitting `Hello` through the real scene Button produces `Player: Hello` and the deterministic Arthur response in Play Mode.
 - Risk: README and planning documents predate project creation and must stay synchronized with the actual repository state.
 - Risk: two Unity projects expose MCP instances simultaneously, so agents must explicitly select `unity-memory-npc-prototype@6bf076995c73b7ab` before reading or mutating Editor state.
 

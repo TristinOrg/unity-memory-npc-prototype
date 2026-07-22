@@ -107,3 +107,29 @@ The assembly reference makes the intended dependency direction enforceable by th
 ### Next lesson
 
 P1 can now focus on one question only: whether player input can travel through a provider abstraction and produce deterministic mock dialogue in the UI.
+
+## 2026-07-21 - P1 offline dialogue vertical slice
+
+### Situation
+
+The project had a validated startup and test baseline but no end-to-end player interaction. Adding memory or a remote model at this point would combine UI, async orchestration, provider integration and state-management risks.
+
+### Decision
+
+Implement the smallest complete offline dialogue path: TMP input, `DialogueController`, `IAIProvider`, `MockAIProvider`, `AIResponse` and transcript output. Keep provider models and contracts in Runtime and scene behavior in a separate Presentation assembly.
+
+### Why
+
+The provider boundary isolates unstable external AI infrastructure from Unity presentation. A deterministic mock makes the full interaction repeatable, free and usable without credentials. Directly composing the mock in the controller is proportional for one provider and avoids introducing a dependency-injection framework before it solves a real problem.
+
+### Validation
+
+- Unity compiled the Runtime, Presentation and EditMode test assemblies with no Console errors or warnings.
+- Four EditMode tests passed: the environment baseline plus deterministic response, invalid-input and cancellation cases.
+- Scene references for input, transcript and submit button are serialized and non-null.
+- In Play Mode, setting the real input to `Hello` and invoking the real Button produced `Player: Hello` followed by `Arthur: The forge is open. What do you need?`.
+- The runtime interaction produced no Console errors or warnings and Play Mode was exited without saving runtime state.
+
+### Next lesson
+
+P2 should introduce structured player facts and versioned persistence without changing the UI-to-provider dependency boundary proven here.

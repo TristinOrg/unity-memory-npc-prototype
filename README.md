@@ -20,7 +20,7 @@ The prototype is complete when this flow works with a mock provider, handles fai
 
 ## Current status
 
-A Unity 2022.3.62f3 project baseline and the planning documents exist. The project does not yet contain a scene, first-party runtime code or first-party tests. The next milestone is to establish assembly and test boundaries, verify a clean Unity compilation baseline, and then build the offline mock-provider dialogue vertical slice.
+A Unity 2022.3.62f3 project baseline and the first offline dialogue vertical slice exist. The `Prototype` scene accepts player text and returns deterministic Arthur dialogue through a provider abstraction without network access. Memory, persistence and context budgeting have not been implemented yet.
 
 ## Documentation
 
