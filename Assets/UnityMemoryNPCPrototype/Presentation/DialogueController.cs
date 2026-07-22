@@ -18,7 +18,7 @@ namespace UnityMemoryNPCPrototype.Presentation
         /// <summary>
         /// Defines the offline request deadline in seconds.
         /// </summary>
-        private const double RequestTimeoutSeconds = 5d;
+        private const double RequestTimeoutSeconds = 15d;
 
         /// <summary>
         /// Defines the ignored local Gemini configuration file name.
