@@ -76,7 +76,7 @@
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: 19 first-party tests cover context, memory, provider reliability and the project baseline; 19 passed on 2026-07-22.
+- EditMode tests: 21 first-party tests cover context, memory, extraction repair, provider reliability and the project baseline; 21 passed on 2026-07-22.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.

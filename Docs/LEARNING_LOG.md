@@ -209,3 +209,23 @@ Timeout and response validity are provider-boundary guarantees, while messages a
 ### Next lesson
 
 The feasibility prototype has answered its scoped questions without adding network credentials or model-specific code. Final Project work should begin from freshly approved requirements, preserve this separation of concerns and add a real provider only with explicit security, cost and evaluation plans.
+
+## 2026-07-22 - Comma-separated fact extraction correction
+
+### Situation
+
+The message `My name is korokawa, i like knife` stored the full trailing preference phrase as the player name. The persisted weapon preference itself remained correct.
+
+### Decision
+
+Treat both `and` and a comma as supported name delimiters in the deliberately narrow extractor. Detect the exact schema-v1 artifact `&lt;name&gt;, i like &lt;stored weapon&gt;` during normalization and atomically persist the repaired name when loading.
+
+### Why
+
+The extractor had only encoded the original demonstration grammar, so punctuation changed the name boundary. Correcting both new extraction and the known persisted artifact prevents existing users from needing to delete their save while avoiding a broad natural-language parser.
+
+### Validation
+
+- The reported comma-separated message now stores `player.name = korokawa` and `player.preference.weapon = knife`.
+- A representative malformed schema-v1 document is repaired on load and remains repaired after a second load.
+- The original `and I like` demonstration remains covered by its existing regression test.

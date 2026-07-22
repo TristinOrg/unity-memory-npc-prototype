@@ -36,9 +36,7 @@ namespace UnityMemoryNPCPrototype.Memory
             if (nameStart >= 0)
             {
                 nameStart += NamePrefix.Length;
-                var nameEnd = playerMessage.IndexOf(" and ", nameStart, StringComparison.OrdinalIgnoreCase);
-                if (nameEnd < 0)
-                    nameEnd = playerMessage.Length;
+                var nameEnd = FindNameEnd(playerMessage, nameStart);
 
                 var name = TrimFactValue(playerMessage.Substring(nameStart, nameEnd - nameStart));
                 if (!string.IsNullOrWhiteSpace(name))
@@ -65,6 +63,26 @@ namespace UnityMemoryNPCPrototype.Memory
         private static string TrimFactValue(string value)
         {
             return value.Trim().TrimEnd('.', ',', '!', '?');
+        }
+
+        /// <summary>
+        /// Finds the earliest supported delimiter after a player name.
+        /// </summary>
+        /// <param name="playerMessage">The original player message.</param>
+        /// <param name="nameStart">The first character of the player name.</param>
+        /// <returns>The exclusive end index of the player name.</returns>
+        private static int FindNameEnd(string playerMessage, int nameStart)
+        {
+            var nameEnd = playerMessage.Length;
+            var conjunctionIndex = playerMessage.IndexOf(" and ", nameStart, StringComparison.OrdinalIgnoreCase);
+            if (conjunctionIndex >= 0)
+                nameEnd = conjunctionIndex;
+
+            var commaIndex = playerMessage.IndexOf(',', nameStart);
+            if (commaIndex >= 0 && commaIndex < nameEnd)
+                nameEnd = commaIndex;
+
+            return nameEnd;
         }
     }
 }

@@ -42,7 +42,9 @@ namespace UnityMemoryNPCPrototype.Memory
                 if (memory is null || memory.SchemaVersion != PlayerMemoryData.CurrentSchemaVersion)
                     return new PlayerMemoryData();
 
-                memory.Normalize();
+                if (memory.Normalize())
+                    Save(memory);
+
                 return memory;
             }
             catch (IOException)

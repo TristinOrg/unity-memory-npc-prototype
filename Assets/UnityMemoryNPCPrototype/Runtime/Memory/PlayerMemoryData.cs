@@ -76,11 +76,29 @@ namespace UnityMemoryNPCPrototype.Memory
         }
 
         /// <summary>
-        /// Restores safe defaults after deserialization.
+        /// Restores safe defaults and repairs known schema-v1 extraction artifacts.
         /// </summary>
-        public void Normalize()
+        /// <returns>Whether the memory data changed.</returns>
+        public bool Normalize()
         {
-            Facts ??= new List<PlayerFact>();
+            if (Facts is null)
+            {
+                Facts = new List<PlayerFact>();
+                return true;
+            }
+
+            if (!TryGetFact(PlayerFactKeys.Name, out var name) || !TryGetFact(PlayerFactKeys.WeaponPreference, out var weaponPreference))
+                return false;
+
+            var invalidSuffix = $", i like {weaponPreference}";
+            if (!name.EndsWith(invalidSuffix, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            var repairedName = name.Substring(0, name.Length - invalidSuffix.Length).Trim();
+            if (string.IsNullOrWhiteSpace(repairedName))
+                return false;
+
+            return SetFact(PlayerFactKeys.Name, repairedName);
         }
     }
 }

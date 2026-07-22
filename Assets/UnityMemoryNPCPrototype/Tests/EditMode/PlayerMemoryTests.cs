@@ -75,6 +75,43 @@ namespace UnityMemoryNPCPrototype.Tests.EditMode
         }
 
         /// <summary>
+        /// Verifies that a comma separates the player name from a following preference.
+        /// </summary>
+        [Test]
+        public void CommaSeparatedMessageDoesNotAppendPreferenceToName()
+        {
+            var memory = new PlayerMemoryData();
+
+            var changed = PlayerFactExtractor.Apply("My name is korokawa, i like knife", memory);
+
+            Assert.That(changed, Is.True);
+            Assert.That(memory.TryGetFact(PlayerFactKeys.Name, out var name), Is.True);
+            Assert.That(memory.TryGetFact(PlayerFactKeys.WeaponPreference, out var weapon), Is.True);
+            Assert.That(name, Is.EqualTo("korokawa"));
+            Assert.That(weapon, Is.EqualTo("knife"));
+        }
+
+        /// <summary>
+        /// Verifies that the known malformed schema-v1 name is repaired and persisted during load.
+        /// </summary>
+        [Test]
+        public void LoadRepairsCommaSeparatedNameExtractionArtifact()
+        {
+            Directory.CreateDirectory(mDirectoryPath);
+            const string LegacyJson = "{\"SchemaVersion\":1,\"Facts\":[{\"Key\":\"player.name\",\"Value\":\"korokawa, i like knife\"},{\"Key\":\"player.preference.weapon\",\"Value\":\"knife\"}]}";
+            File.WriteAllText(mFilePath, LegacyJson);
+            var store = new JsonPlayerMemoryStore(mFilePath);
+
+            var loaded = store.Load();
+            var reloaded = store.Load();
+
+            Assert.That(loaded.TryGetFact(PlayerFactKeys.Name, out var loadedName), Is.True);
+            Assert.That(reloaded.TryGetFact(PlayerFactKeys.Name, out var reloadedName), Is.True);
+            Assert.That(loadedName, Is.EqualTo("korokawa"));
+            Assert.That(reloadedName, Is.EqualTo("korokawa"));
+        }
+
+        /// <summary>
         /// Verifies that structured facts survive a JSON save and reload.
         /// </summary>
         [Test]
