@@ -11,9 +11,9 @@ namespace UnityMemoryNPCPrototype.Dialogue
         /// <summary>
         /// Generates a response for a player message.
         /// </summary>
-        /// <param name="playerMessage">The normalized player message.</param>
+        /// <param name="request">The message and deterministic provider context.</param>
         /// <param name="cancellationToken">The token used to cancel the request.</param>
         /// <returns>The generated dialogue response.</returns>
-        Task<AIResponse> GenerateAsync(string playerMessage, CancellationToken cancellationToken);
+        Task<AIResponse> GenerateAsync(DialogueRequest request, CancellationToken cancellationToken);
     }
 }

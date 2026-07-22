@@ -17,7 +17,8 @@ namespace UnityMemoryNPCPrototype.Tests.EditMode
         public void ValidMessageReturnsDeterministicResponse()
         {
             var provider = new MockAIProvider();
-            var response = provider.GenerateAsync("Hello", CancellationToken.None).GetAwaiter().GetResult();
+            var request = new DialogueRequest("Hello", "[message.current]\nCurrent player message: Hello");
+            var response = provider.GenerateAsync(request, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.That(response.Text, Is.EqualTo(MockAIProvider.DefaultResponse));
         }
@@ -32,7 +33,7 @@ namespace UnityMemoryNPCPrototype.Tests.EditMode
 
             try
             {
-                provider.GenerateAsync(" ", CancellationToken.None);
+                provider.GenerateAsync(new DialogueRequest(" ", "context"), CancellationToken.None);
                 Assert.Fail("Expected an ArgumentException for blank input.");
             }
             catch (ArgumentException)
@@ -50,10 +51,26 @@ namespace UnityMemoryNPCPrototype.Tests.EditMode
             var cancellation = new CancellationTokenSource();
             cancellation.Cancel();
 
-            var task = provider.GenerateAsync("Hello", cancellation.Token);
+            var request = new DialogueRequest("Hello", "context");
+            var task = provider.GenerateAsync(request, cancellation.Token);
 
             Assert.That(task.IsCanceled, Is.True);
             cancellation.Dispose();
+        }
+
+        /// <summary>
+        /// Verifies that recall is derived only from facts present in the supplied context.
+        /// </summary>
+        [Test]
+        public void RecallUsesStructuredFactsFromContext()
+        {
+            var provider = new MockAIProvider();
+            var context = "[fact.player.name]\nPlayer name: Alex\n\n[fact.player.preference.weapon]\nPlayer weapon preference: swords";
+            var request = new DialogueRequest("Do you remember me?", context);
+
+            var response = provider.GenerateAsync(request, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.That(response.Text, Is.EqualTo("Welcome back, Alex. I remember that you are interested in swords."));
         }
     }
 }

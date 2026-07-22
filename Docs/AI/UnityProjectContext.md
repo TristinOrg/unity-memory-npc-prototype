@@ -6,9 +6,9 @@
 
 - Project root: `D:\unity-memory-npc-prototype`
 - Purpose: pre-project feasibility prototype for one persistent-memory NPC dialogue flow; not the assessed CM3070 implementation or formal experiment.
-- Current state: valid Unity P2 baseline with an offline dialogue slice, structured player facts and versioned JSON persistence.
+- Current state: P3 implementation with offline dialogue, versioned structured memory and deterministic budget-aware context selection.
 - Last analyzed: 2026-07-22
-- Last analyzed commit: `a482bb536df98ea0b30ef1c3aa7e56351c630fb0`
+- Last analyzed commit: `5e738b2`
 - Package baseline was updated after the analyzed commit: MCPForUnity is now a direct pinned dependency, unused template packages were removed, and Unity regenerated a consistent lock file.
 
 ## Confirmed Environment
@@ -60,21 +60,22 @@
 | --- | --- | --- | --- |
 | Dependency direction | Presentation may depend on domain/provider abstractions; core data and algorithms should avoid scene dependencies. | Confirmed requirement | `AGENTS.md` |
 | Delivery strategy | Implement an offline mock-provider dialogue vertical slice before persistence, context budgeting or a remote provider. | Confirmed requirement | `Docs/ROADMAP.md`, `Docs/PROTOTYPE_SCOPE.md` |
-| Provider boundary | `DialogueController` depends on `IAIProvider`; P1 composes the deterministic `MockAIProvider` directly without a DI framework. | Confirmed | first-party source |
+| Provider boundary | `DialogueController` depends on `IAIProvider`; requests carry the current message and already-built context, so providers do not own memory selection. | Confirmed | first-party source |
 | Presentation | A scene-bound controller owns UI interaction, request cancellation and safe fallback presentation. | Confirmed | first-party source and scene |
 | Structured memory | Player name and weapon preference are stored as stable key/value facts rather than raw dialogue alone. | Confirmed | first-party source and tests |
 | Persistence | Schema-v1 JSON is stored at `Application.persistentDataPath/player-memory-v1.json` using temporary-file replacement. | Confirmed | first-party source and runtime validation |
+| Context selection | Required instructions, Arthur profile, supported facts and current message precede optional recent turns under a deterministic 600-character budget. | Confirmed | first-party source and tests |
 
 ## Coding Conventions
 
-- Follow repository and global `AGENTS.md` rules; no first-party source exists from which to infer additional conventions.
-- Keep one C# class per file, add required XML documentation and file headers, avoid LINQ and capturing closures, and use the specified Unity object null semantics.
+- Follow repository and global `AGENTS.md` rules.
+- Keep one C# class per file, add English XML documentation, omit source file headers, avoid LINQ and capturing closures, and use the specified Unity object null semantics.
 - Serialized authoring fields are public under the global rules. Core data and testable logic should avoid `UnityEngine.Object` dependencies where practical.
 
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: nine first-party tests; 9 passed, 0 failed, 0 skipped on 2026-07-22.
+- EditMode tests: context, memory, provider and project-baseline coverage is present; use the latest validation report for exact counts.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.
@@ -106,7 +107,7 @@
 - Confirmed: Runtime and EditMode test assembly names and folder boundaries are established.
 - Confirmed: submitting `Hello` through the real scene Button produces `Player: Hello` and the deterministic Arthur response in Play Mode.
 - Confirmed: submitting the demonstration sentence persists schema-v1 `player.name` and `player.preference.weapon` facts that reload in a later Play Mode session.
-- Limitation: stored facts are not supplied to the provider until the P3 context builder exists.
+- Limitation: the character budget is an inspectable provider-independent proxy; a real tokenizer belongs with a future remote provider rather than this offline feasibility slice.
 - Risk: README and planning documents predate project creation and must stay synchronized with the actual repository state.
 - Risk: two Unity projects expose MCP instances simultaneously, so agents must explicitly select `unity-memory-npc-prototype@6bf076995c73b7ab` before reading or mutating Editor state.
 

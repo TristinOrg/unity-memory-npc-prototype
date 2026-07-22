@@ -159,3 +159,27 @@ Structured facts are inspectable, testable and independent of model wording. Sch
 ### Next lesson
 
 P3 should build a deterministic, budget-aware context from authoritative facts and the current message, then allow the mock provider to demonstrate recall without changing persistence ownership.
+
+## 2026-07-22 - P3 deterministic context budgeting
+
+### Situation
+
+P2 persisted authoritative facts, but the provider still received only the current message. Stored memory therefore could not influence dialogue, and there was no explicit rule for resolving context overflow.
+
+### Decision
+
+Build provider context before calling `IAIProvider`, using the fixed priority `instructions -> Arthur profile -> supported facts -> newest recent turns -> current message`. Treat all sections except recent turns as required, enforce a 600-character prototype budget and expose included and removed identifiers in the scene. Keep the mock provider dependent only on the request context.
+
+### Why
+
+Context selection is application policy, not provider infrastructure. Keeping it deterministic makes every inclusion decision reproducible and testable. A character limit is a transparent provider-independent budget proxy for the offline phase; tokenization should be introduced only when a concrete remote model makes its tokenizer relevant.
+
+### Validation
+
+- Context tests cover required facts, overflow trimming, reproducibility and impossible budgets.
+- Provider tests prove that mock recall reads facts from supplied context rather than accessing persistence.
+- The scene exposes used budget, included identifiers and removed identifiers after each request.
+
+### Next lesson
+
+P4 should harden failure and timeout behaviour around the stable offline request contract. A remote provider remains optional and should not own persistence or context-selection policy.

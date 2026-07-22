@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using TMPro;
 using UnityEngine;
@@ -29,6 +30,11 @@ namespace UnityMemoryNPCPrototype.Presentation
         public Button SubmitButton;
 
         /// <summary>
+        /// Displays context budget and trimming decisions for prototype inspection.
+        /// </summary>
+        public TMP_Text ContextDebug;
+
+        /// <summary>
         /// Stores the active provider.
         /// </summary>
         private IAIProvider mProvider;
@@ -49,6 +55,21 @@ namespace UnityMemoryNPCPrototype.Presentation
         private JsonPlayerMemoryStore mMemoryStore;
 
         /// <summary>
+        /// Builds deterministic budget-aware provider context.
+        /// </summary>
+        private DialogueContextBuilder mContextBuilder;
+
+        /// <summary>
+        /// Stores recent dialogue turns in chronological order for this session.
+        /// </summary>
+        private readonly List<DialogueContextItem> mRecentTurns = new();
+
+        /// <summary>
+        /// Stores the next stable recent-turn identifier.
+        /// </summary>
+        private int mNextTurnId;
+
+        /// <summary>
         /// Creates the offline provider used by the first vertical slice.
         /// </summary>
         private void Awake()
@@ -57,6 +78,7 @@ namespace UnityMemoryNPCPrototype.Presentation
             var memoryPath = System.IO.Path.Combine(Application.persistentDataPath, "player-memory-v1.json");
             mMemoryStore = new JsonPlayerMemoryStore(memoryPath);
             mPlayerMemory = mMemoryStore.Load();
+            mContextBuilder = new DialogueContextBuilder();
         }
 
         /// <summary>
@@ -92,6 +114,9 @@ namespace UnityMemoryNPCPrototype.Presentation
                 return;
 
             CapturePlayerFacts(playerMessage);
+            var contextResult = mContextBuilder.Build(mPlayerMemory, mRecentTurns, playerMessage);
+            PresentContextDebug(contextResult);
+            var request = new DialogueRequest(playerMessage, contextResult.Context);
 
             var requestCancellation = new CancellationTokenSource();
             mRequestCancellation = requestCancellation;
@@ -100,9 +125,13 @@ namespace UnityMemoryNPCPrototype.Presentation
 
             try
             {
-                var response = await mProvider.GenerateAsync(playerMessage, requestCancellation.Token);
+                var response = await mProvider.GenerateAsync(request, requestCancellation.Token);
                 if (this)
+                {
                     Transcript.text = $"Player: {playerMessage}\nArthur: {response.Text}";
+                    RecordTurn("Player", playerMessage);
+                    RecordTurn("Arthur", response.Text);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -162,6 +191,35 @@ namespace UnityMemoryNPCPrototype.Presentation
             {
                 Debug.LogWarning($"Player memory could not be saved: {exception.Message}");
             }
+        }
+
+        /// <summary>
+        /// Presents context inclusion and trimming decisions without exposing the full prompt.
+        /// </summary>
+        /// <param name="result">The completed context build result.</param>
+        private void PresentContextDebug(DialogueContextBuildResult result)
+        {
+            if (!ContextDebug)
+                return;
+
+            var included = string.Join(", ", result.IncludedItemIds);
+            var removed = result.RemovedItemIds.Count == 0 ? "none" : string.Join(", ", result.RemovedItemIds);
+            ContextDebug.text = $"Context: {result.UsedCharacters}/{result.Budget} chars\nIncluded: {included}\nRemoved: {removed}";
+        }
+
+        /// <summary>
+        /// Records one completed dialogue turn and keeps a bounded recent history.
+        /// </summary>
+        /// <param name="speaker">The displayed speaker name.</param>
+        /// <param name="text">The completed turn text.</param>
+        private void RecordTurn(string speaker, string text)
+        {
+            mRecentTurns.Add(new DialogueContextItem($"turn.{mNextTurnId}", $"{speaker}: {text}"));
+            mNextTurnId++;
+
+            const int maximumRecentTurns = 6;
+            if (mRecentTurns.Count > maximumRecentTurns)
+                mRecentTurns.RemoveAt(0);
         }
     }
 }
