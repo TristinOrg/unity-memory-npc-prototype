@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityMemoryNPCPrototype.Dialogue;
+using UnityMemoryNPCPrototype.Memory;
 
 namespace UnityMemoryNPCPrototype.Presentation
 {
@@ -38,11 +39,24 @@ namespace UnityMemoryNPCPrototype.Presentation
         private CancellationTokenSource mRequestCancellation;
 
         /// <summary>
+        /// Stores the versioned player memory loaded for this application session.
+        /// </summary>
+        private PlayerMemoryData mPlayerMemory;
+
+        /// <summary>
+        /// Stores the JSON persistence adapter used by this controller.
+        /// </summary>
+        private JsonPlayerMemoryStore mMemoryStore;
+
+        /// <summary>
         /// Creates the offline provider used by the first vertical slice.
         /// </summary>
         private void Awake()
         {
             mProvider = new MockAIProvider();
+            var memoryPath = System.IO.Path.Combine(Application.persistentDataPath, "player-memory-v1.json");
+            mMemoryStore = new JsonPlayerMemoryStore(memoryPath);
+            mPlayerMemory = mMemoryStore.Load();
         }
 
         /// <summary>
@@ -76,6 +90,8 @@ namespace UnityMemoryNPCPrototype.Presentation
             var playerMessage = PlayerInput.text.Trim();
             if (string.IsNullOrWhiteSpace(playerMessage))
                 return;
+
+            CapturePlayerFacts(playerMessage);
 
             var requestCancellation = new CancellationTokenSource();
             mRequestCancellation = requestCancellation;
@@ -127,6 +143,25 @@ namespace UnityMemoryNPCPrototype.Presentation
             mRequestCancellation?.Cancel();
             mRequestCancellation?.Dispose();
             mRequestCancellation = null;
+        }
+
+        /// <summary>
+        /// Extracts and persists supported structured facts without blocking dialogue on failure.
+        /// </summary>
+        /// <param name="playerMessage">The submitted player message.</param>
+        private void CapturePlayerFacts(string playerMessage)
+        {
+            if (!PlayerFactExtractor.Apply(playerMessage, mPlayerMemory))
+                return;
+
+            try
+            {
+                mMemoryStore.Save(mPlayerMemory);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Player memory could not be saved: {exception.Message}");
+            }
         }
     }
 }

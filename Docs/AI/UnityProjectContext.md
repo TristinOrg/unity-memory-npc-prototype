@@ -6,9 +6,9 @@
 
 - Project root: `D:\unity-memory-npc-prototype`
 - Purpose: pre-project feasibility prototype for one persistent-memory NPC dialogue flow; not the assessed CM3070 implementation or formal experiment.
-- Current state: valid Unity P1 baseline with a minimal startup scene and an offline mock-provider dialogue vertical slice.
-- Last analyzed: 2026-07-21
-- Last analyzed commit: `f9ecfbac3c9991a9a4bb277e04d9955336368458`
+- Current state: valid Unity P2 baseline with an offline dialogue slice, structured player facts and versioned JSON persistence.
+- Last analyzed: 2026-07-22
+- Last analyzed commit: `a482bb536df98ea0b30ef1c3aa7e56351c630fb0`
 - Package baseline was updated after the analyzed commit: MCPForUnity is now a direct pinned dependency, unused template packages were removed, and Unity regenerated a consistent lock file.
 
 ## Confirmed Environment
@@ -62,6 +62,8 @@
 | Delivery strategy | Implement an offline mock-provider dialogue vertical slice before persistence, context budgeting or a remote provider. | Confirmed requirement | `Docs/ROADMAP.md`, `Docs/PROTOTYPE_SCOPE.md` |
 | Provider boundary | `DialogueController` depends on `IAIProvider`; P1 composes the deterministic `MockAIProvider` directly without a DI framework. | Confirmed | first-party source |
 | Presentation | A scene-bound controller owns UI interaction, request cancellation and safe fallback presentation. | Confirmed | first-party source and scene |
+| Structured memory | Player name and weapon preference are stored as stable key/value facts rather than raw dialogue alone. | Confirmed | first-party source and tests |
+| Persistence | Schema-v1 JSON is stored at `Application.persistentDataPath/player-memory-v1.json` using temporary-file replacement. | Confirmed | first-party source and runtime validation |
 
 ## Coding Conventions
 
@@ -72,7 +74,7 @@
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: four first-party tests; 4 passed, 0 failed, 0 skipped on 2026-07-21.
+- EditMode tests: nine first-party tests; 9 passed, 0 failed, 0 skipped on 2026-07-22.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.
@@ -103,6 +105,8 @@
 - Confirmed: the startup scene contains the camera, directional light, dialogue Canvas, EventSystem and serialized DialogueController and is enabled at build index 0.
 - Confirmed: Runtime and EditMode test assembly names and folder boundaries are established.
 - Confirmed: submitting `Hello` through the real scene Button produces `Player: Hello` and the deterministic Arthur response in Play Mode.
+- Confirmed: submitting the demonstration sentence persists schema-v1 `player.name` and `player.preference.weapon` facts that reload in a later Play Mode session.
+- Limitation: stored facts are not supplied to the provider until the P3 context builder exists.
 - Risk: README and planning documents predate project creation and must stay synchronized with the actual repository state.
 - Risk: two Unity projects expose MCP instances simultaneously, so agents must explicitly select `unity-memory-npc-prototype@6bf076995c73b7ab` before reading or mutating Editor state.
 

@@ -133,3 +133,29 @@ The provider boundary isolates unstable external AI infrastructure from Unity pr
 ### Next lesson
 
 P2 should introduce structured player facts and versioned persistence without changing the UI-to-provider dependency boundary proven here.
+
+## 2026-07-22 - P2 structured facts and versioned persistence
+
+### Situation
+
+P1 could generate deterministic dialogue but retained no authoritative player state. Raw dialogue history alone would make later recall difficult to validate and would couple persistence to natural-language formatting.
+
+### Decision
+
+Represent the two demonstration facts as stable key/value records inside a schema-v1 document. Use a deliberately narrow deterministic extractor for the supported sentence pattern and persist the document as human-readable JSON under `Application.persistentDataPath`. Write through a temporary file and replace the previous document only after serialization succeeds.
+
+### Why
+
+Structured facts are inspectable, testable and independent of model wording. Schema metadata creates an explicit migration boundary. The narrow extractor proves the data flow without pretending that a hand-written parser is a general NLP solution; a future extraction strategy can replace it behind the same structured memory representation.
+
+### Validation
+
+- Nine EditMode tests passed, including fact replacement, deterministic extraction, JSON round trip, missing-file defaults and malformed-file preservation.
+- Unity compiled with no Console errors or warnings.
+- A real Play Mode submission stored `player.name = Alex` and `player.preference.weapon = swords` in schema version 1.
+- After exiting and re-entering Play Mode, both facts loaded with their original values.
+- The runtime test file did not exist before validation and was deleted afterward, leaving no test state in the user data directory.
+
+### Next lesson
+
+P3 should build a deterministic, budget-aware context from authoritative facts and the current message, then allow the mock provider to demonstrate recall without changing persistence ownership.

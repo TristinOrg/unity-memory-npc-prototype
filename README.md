@@ -20,7 +20,7 @@ The prototype is complete when this flow works with a mock provider, handles fai
 
 ## Current status
 
-A Unity 2022.3.62f3 project baseline and the first offline dialogue vertical slice exist. The `Prototype` scene accepts player text and returns deterministic Arthur dialogue through a provider abstraction without network access. Memory, persistence and context budgeting have not been implemented yet.
+A Unity 2022.3.62f3 project baseline, offline dialogue vertical slice and structured player-fact persistence exist. The `Prototype` scene extracts the demonstration name and weapon preference, stores them in versioned JSON across sessions and returns deterministic Arthur dialogue without network access. Context budgeting has not been implemented yet, so persisted facts do not influence responses until P3.
 
 ## Documentation
 
