@@ -22,6 +22,17 @@ The prototype is complete when this flow works with a mock provider, handles fai
 
 A complete Unity 2022.3.62f3 feasibility prototype now covers offline dialogue, structured player-fact persistence, deterministic context budgeting and provider reliability. The `Prototype` scene stores the demonstration facts across sessions, exposes context inclusion and trimming decisions, recalls supplied facts without network access, and recovers the UI after cancellation, timeout, invalid responses or provider failures.
 
+## Optional Gemini provider
+
+The project remains offline by default. To test Gemini without committing a credential:
+
+1. Copy `Config/gemini-provider.example.json` to `Config/gemini-provider.local.json`.
+2. Set `UseGemini` to `true`.
+3. Put your Gemini key in `ApiKey` and keep or replace the `Model` value.
+4. Enter Play Mode and use the existing dialogue UI.
+
+Files ending in `.local.json` are ignored by Git. Never place a real key in the example file, a scene, a prefab or source code. Invalid or absent local configuration safely selects the deterministic mock provider.
+
 ## Documentation
 
 - [Prototype scope](Docs/PROTOTYPE_SCOPE.md)

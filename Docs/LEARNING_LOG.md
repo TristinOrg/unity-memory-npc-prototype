@@ -229,3 +229,28 @@ The extractor had only encoded the original demonstration grammar, so punctuatio
 - The reported comma-separated message now stores `player.name = korokawa` and `player.preference.weapon = knife`.
 - A representative malformed schema-v1 document is repaired on load and remains repaired after a second load.
 - The original `and I like` demonstration remains covered by its existing regression test.
+
+## 2026-07-22 - Optional Gemini provider boundary
+
+### Situation
+
+The offline prototype answered its feasibility questions, but model quality could not be compared with a real LLM response. Adding a remote provider also introduces credential, API-version, network and response-shape risks that the mock path does not have.
+
+### Decision
+
+Add an optional `GeminiAIProvider` using Google's Interactions REST endpoint. Select it only through ignored local configuration containing `UseGemini`, `ApiKey` and `Model`; retain Mock as the default and fallback. Send the already-budgeted application context, then pass the returned text through the existing reliability wrapper.
+
+### Why
+
+Provider selection belongs at the composition boundary, while context policy and memory remain provider-independent. Keeping credentials outside Unity assets and source history prevents accidental Git disclosure. Retaining Mock means development and assessment demonstrations do not depend on quota, network access or a third-party service.
+
+### Validation
+
+- Configuration tests cover missing, enabled and missing-key states without using a real credential.
+- JSON tests cover escaped request content and final text extraction from a representative completed interaction.
+- Unity compiles the HTTP provider without adding another package.
+- Live Gemini behavior remains intentionally unverified until a local key is supplied.
+
+### Next lesson
+
+A Final Project should normally proxy commercial LLM credentials through a controlled backend rather than distributing a reusable key in a client build. Direct client access is acceptable here only as a local feasibility option.

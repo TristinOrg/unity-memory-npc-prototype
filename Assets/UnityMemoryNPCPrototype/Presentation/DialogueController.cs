@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,11 @@ namespace UnityMemoryNPCPrototype.Presentation
         /// Defines the offline request deadline in seconds.
         /// </summary>
         private const double RequestTimeoutSeconds = 5d;
+
+        /// <summary>
+        /// Defines the ignored local Gemini configuration file name.
+        /// </summary>
+        private const string GeminiConfigurationFileName = "gemini-provider.local.json";
 
         /// <summary>
         /// Receives the player's message.
@@ -79,11 +85,35 @@ namespace UnityMemoryNPCPrototype.Presentation
         /// </summary>
         private void Awake()
         {
-            mProvider = new ReliableAIProvider(new MockAIProvider(), TimeSpan.FromSeconds(RequestTimeoutSeconds));
+            mProvider = new ReliableAIProvider(CreateProvider(), TimeSpan.FromSeconds(RequestTimeoutSeconds));
             var memoryPath = System.IO.Path.Combine(Application.persistentDataPath, "player-memory-v1.json");
             mMemoryStore = new JsonPlayerMemoryStore(memoryPath);
             mPlayerMemory = mMemoryStore.Load();
             mContextBuilder = new DialogueContextBuilder();
+        }
+
+        /// <summary>
+        /// Creates the locally selected provider while keeping the mock path as the default.
+        /// </summary>
+        /// <returns>The configured dialogue provider.</returns>
+        private static IAIProvider CreateProvider()
+        {
+            var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            var configurationPath = Path.Combine(projectRoot, "Config", GeminiConfigurationFileName);
+            try
+            {
+                var configuration = GeminiProviderConfiguration.Load(configurationPath);
+                if (configuration.UseGemini)
+                {
+                    return new GeminiAIProvider(configuration.ApiKey, configuration.Model);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Gemini configuration is invalid; the mock provider will be used. {exception.Message}");
+            }
+
+            return new MockAIProvider();
         }
 
         /// <summary>

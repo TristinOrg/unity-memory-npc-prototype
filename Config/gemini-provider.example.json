@@ -1,0 +1,5 @@
+{
+  "UseGemini": false,
+  "ApiKey": "",
+  "Model": "gemini-3.6-flash"
+}
