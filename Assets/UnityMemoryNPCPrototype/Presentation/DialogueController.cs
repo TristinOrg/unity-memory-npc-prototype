@@ -15,6 +15,11 @@ namespace UnityMemoryNPCPrototype.Presentation
     public sealed class DialogueController : MonoBehaviour
     {
         /// <summary>
+        /// Defines the offline request deadline in seconds.
+        /// </summary>
+        private const double RequestTimeoutSeconds = 5d;
+
+        /// <summary>
         /// Receives the player's message.
         /// </summary>
         public TMP_InputField PlayerInput;
@@ -74,7 +79,7 @@ namespace UnityMemoryNPCPrototype.Presentation
         /// </summary>
         private void Awake()
         {
-            mProvider = new MockAIProvider();
+            mProvider = new ReliableAIProvider(new MockAIProvider(), TimeSpan.FromSeconds(RequestTimeoutSeconds));
             var memoryPath = System.IO.Path.Combine(Application.persistentDataPath, "player-memory-v1.json");
             mMemoryStore = new JsonPlayerMemoryStore(memoryPath);
             mPlayerMemory = mMemoryStore.Load();
@@ -88,6 +93,9 @@ namespace UnityMemoryNPCPrototype.Presentation
         {
             if (SubmitButton)
                 SubmitButton.onClick.AddListener(HandleSubmitClicked);
+
+            if (mRequestCancellation is null && PlayerInput && SubmitButton)
+                SetInteractive(true);
         }
 
         /// <summary>
@@ -135,6 +143,11 @@ namespace UnityMemoryNPCPrototype.Presentation
             }
             catch (OperationCanceledException)
             {
+            }
+            catch (TimeoutException)
+            {
+                if (this)
+                    Transcript.text = $"Player: {playerMessage}\nArthur: That took too long. Please try again.";
             }
             catch (Exception)
             {

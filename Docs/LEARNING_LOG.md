@@ -183,3 +183,29 @@ Context selection is application policy, not provider infrastructure. Keeping it
 ### Next lesson
 
 P4 should harden failure and timeout behaviour around the stable offline request contract. A remote provider remains optional and should not own persistence or context-selection policy.
+
+## 2026-07-22 - P4 provider reliability and prototype completion
+
+### Situation
+
+The offline success path was stable, but provider calls had no enforced deadline and response validity depended on each provider. Cancellation and exceptions were caught by the scene controller, but reliability policy would have been duplicated by every future provider.
+
+### Decision
+
+Wrap providers with `ReliableAIProvider`. The wrapper enforces a five-second deadline, preserves caller cancellation, rejects empty dialogue and normalizes valid text before it reaches presentation. Keep the controller responsible only for visible loading, timeout and fallback states, and restore interaction whenever the component is re-enabled.
+
+### Why
+
+Timeout and response validity are provider-boundary guarantees, while messages and button state are presentation concerns. Separating them makes the same reliability contract reusable by a future remote provider without coupling Runtime to Unity scene objects. Internal awaits do not capture Unity's synchronization context, so the plain C# boundary remains independently testable.
+
+### Validation
+
+- Nineteen EditMode tests passed, including success normalization, empty responses, timeout, caller cancellation and provider exceptions.
+- In Play Mode, normal dialogue completed and restored the submit button.
+- Injected provider failure displayed the fallback and restored the submit button.
+- Injected timeout displayed the timeout-specific message and restored the submit button.
+- Unity reported no Console errors or warnings after the runtime scenarios.
+
+### Next lesson
+
+The feasibility prototype has answered its scoped questions without adding network credentials or model-specific code. Final Project work should begin from freshly approved requirements, preserve this separation of concerns and add a real provider only with explicit security, cost and evaluation plans.

@@ -52,6 +52,8 @@ Exit condition: required facts remain available under the configured budget and 
 
 Exit condition: the prototype satisfies `PROTOTYPE_SCOPE.md` and no new formal-project features are started.
 
+Status: completed with the offline provider. The optional remote provider was deliberately deferred because it is not required to answer the feasibility questions.
+
 ## First implementation target
 
 P1 is the first coding milestone. P0 must be completed first because code, packages and assembly decisions depend on the actual Unity version and project configuration.

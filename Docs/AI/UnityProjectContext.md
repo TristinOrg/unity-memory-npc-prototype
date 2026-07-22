@@ -6,7 +6,7 @@
 
 - Project root: `D:\unity-memory-npc-prototype`
 - Purpose: pre-project feasibility prototype for one persistent-memory NPC dialogue flow; not the assessed CM3070 implementation or formal experiment.
-- Current state: P3 implementation with offline dialogue, versioned structured memory and deterministic budget-aware context selection.
+- Current state: complete P4 feasibility prototype with offline dialogue, structured memory, deterministic context selection and provider-independent reliability handling.
 - Last analyzed: 2026-07-22
 - Last analyzed commit: `5e738b2`
 - Package baseline was updated after the analyzed commit: MCPForUnity is now a direct pinned dependency, unused template packages were removed, and Unity regenerated a consistent lock file.
@@ -65,6 +65,7 @@
 | Structured memory | Player name and weapon preference are stored as stable key/value facts rather than raw dialogue alone. | Confirmed | first-party source and tests |
 | Persistence | Schema-v1 JSON is stored at `Application.persistentDataPath/player-memory-v1.json` using temporary-file replacement. | Confirmed | first-party source and runtime validation |
 | Context selection | Required instructions, Arthur profile, supported facts and current message precede optional recent turns under a deterministic 600-character budget. | Confirmed | first-party source and tests |
+| Provider reliability | `ReliableAIProvider` applies a five-second deadline, preserves caller cancellation and rejects empty responses before presentation. | Confirmed | first-party source, tests and runtime validation |
 
 ## Coding Conventions
 
@@ -75,7 +76,7 @@
 ## Testing And Validation
 
 - Unity Test Framework is available through the locked Development feature.
-- EditMode tests: context, memory, provider and project-baseline coverage is present; use the latest validation report for exact counts.
+- EditMode tests: 19 first-party tests cover context, memory, provider reliability and the project baseline; 19 passed on 2026-07-22.
 - PlayMode tests: no first-party tests or test assembly yet.
 - CI/build validation: no CI configuration or documented command exists.
 - After the package refresh, the connected Editor is idle with no compilation or domain reload pending and the Console reports no errors or warnings.
@@ -108,6 +109,7 @@
 - Confirmed: submitting `Hello` through the real scene Button produces `Player: Hello` and the deterministic Arthur response in Play Mode.
 - Confirmed: submitting the demonstration sentence persists schema-v1 `player.name` and `player.preference.weapon` facts that reload in a later Play Mode session.
 - Limitation: the character budget is an inspectable provider-independent proxy; a real tokenizer belongs with a future remote provider rather than this offline feasibility slice.
+- Limitation: no remote provider or target Player build was added; the validated deliverable remains an offline Editor feasibility prototype.
 - Risk: README and planning documents predate project creation and must stay synchronized with the actual repository state.
 - Risk: two Unity projects expose MCP instances simultaneously, so agents must explicitly select `unity-memory-npc-prototype@6bf076995c73b7ab` before reading or mutating Editor state.
 
